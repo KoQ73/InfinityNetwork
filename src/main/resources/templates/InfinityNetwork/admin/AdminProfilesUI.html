@@ -179,6 +179,17 @@
 
         fetchProfilesData();
 
+        const allButton = document.getElementById("search-all-button");
+        allButton.addEventListener("click", async function() {
+            try {
+                fetchProfilesData();
+                const input = document.getElementById("search-value");
+                input.value = "";
+            } catch(error) {
+                console.log("error");
+            }
+        });
+
         const form = document.getElementById("search-button");
         form.addEventListener("click", () => {
             const criteria = document.getElementById("search-value").value;
