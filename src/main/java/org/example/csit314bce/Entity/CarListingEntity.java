@@ -456,7 +456,7 @@ public class CarListingEntity {
 
         // SQL query using the validated criteria and filtering by listedBy
         String sql = "SELECT carBrand, carModel, carPlateNumber, created_At, listingStatus, " +
-                "manufacturedYear, millage, photo, price, updated_at, listedBy, sellerUsername, viewCount, favoriteCount" +
+                "manufacturedYear, millage, photo, price, updated_at, listedBy, sellerUsername, viewCount, favoriteCount " +
                 "FROM carListings WHERE " + criteria + " LIKE ? ";
 
         String likeValue = "%" + value + "%";

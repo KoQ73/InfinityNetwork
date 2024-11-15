@@ -1,0 +1,147 @@
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<div th:insert="~{header :: header}"></div>
+<title>Dashboard</title>
+<link rel="stylesheet" href="/css/buyerDashboard.css"/>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const username = sessionStorage.getItem("username");
+
+        if (!username) {
+            console.error("Username is missing from sessionStorage!");
+            alert("Please log in to view your favorite listings.");
+            return;
+        }
+
+        console.log("Fetching favorite listings for:", username);
+        getBuyerUsedCarListing(username);
+    });
+
+    async function viewListing(listing) {
+        window.location.href = `/InfinityNetwork/buyer/viewUsedCar?carPlateNumber=${listing}`;
+    }
+
+    // Fetch favorite listings for the user
+    function getBuyerUsedCarListing(username) {
+        fetch(`/InfinityNetwork/buyer/fetchAllFavoriteListings?username=${username}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Network response was not ok");
+                }
+                return response.json();
+            })
+            .then(data => {
+                showUsedCarListing(data);
+            })
+            .catch(error => {
+                console.error("Failed to fetch favorite listings:", error);
+            });
+    }
+
+    // Display favorite listings
+    function showUsedCarListing(listings) {
+        const listingCards = document.getElementById("listing-cards");
+        listingCards.innerHTML = ''; // Clear any existing content
+
+        if (listings.length === 0) {
+            listingCards.innerHTML = "<p>No favorite listings found.</p>";
+            return;
+        }
+
+        listings.forEach(listing => {
+            const card = document.createElement("div");
+            card.classList.add('col-md-4'); // Bootstrap column class for responsive layout
+
+            card.innerHTML = `
+                    <div class="card h-100">
+                        <img src="${listing.photo ? listing.photo : ''}" alt="No Image" class="card-img-top card-img fit-picture">
+                        <div class="card-body">
+                            <p class="card-text"><span class="user-info">Car Brand</span>: ${listing.carBrand}</p>
+                            <p class="card-text"><span class="user-info">Car Model</span>: ${listing.carModel}</p>
+                            <p class="card-text"><span class="user-info">Plate Number</span>: ${listing.carPlateNumber}</p>
+                            <p class="card-text"><span class="user-info">Manufactured Year</span>: ${listing.manufacturedYear}</p>
+                            <p class="card-text"><span class="user-info">Millage</span>: ${listing.millage}</p>
+                            <p class="card-text"><span class="user-info">Price</span>: ${listing.price}</p>
+                            <p class="card-text"><span class="user-info">Listed By</span>: ${listing.listedBy}</p>
+                            <p class="card-text"><span class="user-info">Seller Username</span>: ${listing.sellerUsername}</p>
+                            <p class="card-text"><span class="user-info">Listing Status</span>: ${listing.listingStatus}</p>
+                        </div>
+                        <div class="card-footer container">
+                            <div class="row justify-content-between">
+                                <button class="btn btn-primary col-5" onclick="viewListing('${listing.carPlateNumber}')">View</button>
+                                <button class="btn btn-primary col-5" onclick="removeFavorite('${listing.carPlateNumber}')">Remove</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+            listingCards.appendChild(card);
+        });
+    }
+
+    async function removeFavorite(carPlateNumber) {
+        const username = sessionStorage.getItem("username");
+
+        if (!username) {
+            console.error("Username is missing from sessionStorage!");
+            alert("Please log in to remove a favorite.");
+            return;
+        }
+
+        // Prepare the request URL with query parameters for username and carPlateNumber
+        const url = `/InfinityNetwork/buyer/removeFavorite?username=${username}&carPlateNumber=${carPlateNumber}`;
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to remove the favorite listing.");
+            }
+
+            const result = await response.text();  // The backend returns a message string
+            console.log(result);  // You can log the result or show it to the user
+
+            // If the favorite is successfully removed, refresh the listing
+            alert("Favorite removed successfully!");
+            getBuyerUsedCarListing(username);  // Re-fetch the listings after removal
+        } catch (error) {
+            console.error("Error while removing favorite:", error);
+            alert("Failed to remove the favorite. Please try again later.");
+        }
+    }
+
+
+</script>
+</head>
+<body class="d-flex flex-column min-vh-100">
+<div th:insert="~{buyerNavbar :: buyer-navbar}"></div>
+
+<div class="px-4 py-5 my-5 text-center">
+    <svg xmlns="http://www.w3.org/2000/svg" width="72" height="57" fill="currentColor" cclass="d-block mx-auto mb-4 bi bi-person-fill-gear" viewBox="0 0 16 16">
+        <path d="M4 9a1 1 0 1 1-2 0 1 1 0 0 1 2 0m10 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0M6 8a1 1 0 0 0 0 2h4a1 1 0 1 0 0-2zM4.862 4.276 3.906 6.19a.51.51 0 0 0 .497.731c.91-.073 2.35-.17 3.597-.17s2.688.097 3.597.17a.51.51 0 0 0 .497-.731l-.956-1.913A.5.5 0 0 0 10.691 4H5.309a.5.5 0 0 0-.447.276"/>
+        <path d="M2.52 3.515A2.5 2.5 0 0 1 4.82 2h6.362c1 0 1.904.596 2.298 1.515l.792 1.848c.075.175.21.319.38.404.5.25.855.715.965 1.262l.335 1.679q.05.242.049.49v.413c0 .814-.39 1.543-1 1.997V13.5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-1.338c-1.292.048-2.745.088-4 .088s-2.708-.04-4-.088V13.5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-1.892c-.61-.454-1-1.183-1-1.997v-.413a2.5 2.5 0 0 1 .049-.49l.335-1.68c.11-.546.465-1.012.964-1.261a.8.8 0 0 0 .381-.404l.792-1.848ZM4.82 3a1.5 1.5 0 0 0-1.379.91l-.792 1.847a1.8 1.8 0 0 1-.853.904.8.8 0 0 0-.43.564L1.03 8.904a1.5 1.5 0 0 0-.03.294v.413c0 .796.62 1.448 1.408 1.484 1.555.07 3.786.155 5.592.155s4.037-.084 5.592-.155A1.48 1.48 0 0 0 15 9.611v-.413q0-.148-.03-.294l-.335-1.68a.8.8 0 0 0-.43-.563 1.8 1.8 0 0 1-.853-.904l-.792-1.848A1.5 1.5 0 0 0 11.18 3z"/>
+    </svg>
+    <h1 class="display-5 fw-bold">Favorite</h1>
+    <div class="col-lg-6 mx-auto">
+
+    </div>
+</div>
+
+
+
+<!-- Dashboard -->
+
+<div class="container-fluid px-5 my-5" style="background-color: white">
+
+    <!-- Listings -->
+
+    <div id="listing-cards" class="row g-4 overflow-auto" style="max-height: 800px"></div>
+</div>
+
+
+<div class="mt-auto footer-color container-fluid" th:insert="~{footer :: footer}"></div>
+</body>
+</html>

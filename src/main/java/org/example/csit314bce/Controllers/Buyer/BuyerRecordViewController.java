@@ -15,7 +15,7 @@ public class BuyerRecordViewController {
         this.carListingEntity = carListingEntity;
     }
 
-    @GetMapping(value = "/InfinityNetwork/buyer/recordView", consumes = "application/json")
+    @GetMapping(value = "/InfinityNetwork/buyer/recordView")
     public String buyerRecordView(@RequestParam String carPlateNumber) {
         //Biz logic, if any
 

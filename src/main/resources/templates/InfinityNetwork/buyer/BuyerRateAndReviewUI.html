@@ -1,0 +1,134 @@
+
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html" xmlns:th="http://www.w3.org/1999/xhtml">
+<div th:insert="~{header :: header}"></div>
+<title>Dashboard</title>
+<link rel="stylesheet" href="/css/buyerDashboard.css" />
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function displaySuccess() {
+        Swal.fire({
+            title: "Agent Rated!",
+            icon: "success",
+            confirmButtonText: 'OK'
+        }).then(() => {
+            // Redirect after user clicks "OK" in Swal
+            window.location.href = "/InfinityNetwork/buyer/dashboard";
+        });
+    }
+
+    function displayError(error) {
+        Swal.fire({
+            title: 'Error!',
+            text: 'Failed to rate agent',
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
+    }
+
+    async function rateAndReviewAgent() {
+        event.preventDefault();
+        const form = document.getElementById("rating-form");
+        if (!form.checkValidity()) {
+            form.classList.add('was-validated');
+            return;
+        }
+
+        form.classList.add('was-validated')
+
+        const username = sessionStorage.getItem("username");
+        const rating = document.getElementById("rating").value;
+        const data = {
+            reviewBy: username,
+            rating: parseFloat(rating),
+            comment: document.getElementById("comment").value,
+            reviewFor: document.getElementById("review-for").value
+        }
+        console.log(data);
+        try {
+            const url = "/InfinityNetwork/buyer/rateAgent"
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            if (!response.ok) {
+                throw new Error(`Error: ${response.statusText}`);
+            }
+            const result = await response.text();
+            if (result !== "success") {
+                throw new Error(`Error: ${result}`);
+            }
+            displaySuccess();
+        } catch (error) {
+            displayError(error);
+        }
+
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const currentUrl = window.location.pathname;
+        const navLinks = document.querySelectorAll(".navbar-nav .nav-link");
+
+        navLinks.forEach(link => {
+            if (link.getAttribute("href") === currentUrl) {
+                link.classList.add("active");
+            }
+        });
+    });
+</script>
+</head>
+<body class="d-flex flex-column min-vh-100">
+<div th:insert="~{buyerNavbar :: buyer-navbar}"></div>
+
+<div class="px-4 py-5 my-5 text-center">
+    <h1 class="display-5 fw-bold">Rate Agent</h1>
+</div>
+
+<div class="container-fluid mb-5">
+    <form class="row g-1 needs-validation" id="rating-form" onsubmit="rateAndReviewAgent()" novalidate>
+        <div class="row justify-content-md-center">
+            <div class="mb-3 col-md-6">
+                <label for="review-for" class="form-label">Agent Username</label>
+                <input type="text" class="form-control" id="review-for" required>
+                <div class="invalid-feedback">
+                    Please provide an agent username to review.
+                </div>
+            </div>
+        </div>
+
+        <div class="row justify-content-md-center">
+            <div class="mb-3 col-md-6">
+                <label for="comment" class="form-label">Comment</label>
+                <textarea class="form-control" id="comment" required></textarea>
+                <div class="invalid-feedback">
+                    Please provide a comment.
+                </div>
+            </div>
+        </div>
+
+        <!-- New rating input field -->
+        <div class="row justify-content-md-center">
+            <div class="mb-3 col-md-6">
+                <label for="rating" class="form-label">Rating (0.0 - 5.0)</label>
+                <input type="number" class="form-control" id="rating" min="0" max="5" step="0.1" required>
+                <div class="invalid-feedback">
+                    Please provide a rating between 0.0 and 5.0.
+                </div>
+            </div>
+        </div>
+
+        <div class="row justify-content-md-center">
+            <div class="col-md-6 text-center">
+                <button class="btn btn-outline-secondary" type="submit">Rate And Review</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+
+<div class="mt-auto footer-color container-fluid" th:insert="~{footer :: footer}"></div>
+</body>
+</html>

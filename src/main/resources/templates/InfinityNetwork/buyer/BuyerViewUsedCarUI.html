@@ -1,14 +1,69 @@
 
 <!DOCTYPE html>
-<html lang="en" xmlns="http://www.w3.org/1999/html" xmlns:th="http://www.w3.org/1999/xhtml">
+<html xmlns:th="http://www.thymeleaf.org">
 <div th:insert="~{header :: header}"></div>
 <title>Dashboard</title>
-<link rel="stylesheet" href="/css/buyerDashboard.css" />
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link rel="stylesheet" href="/css/buyerDashboard.css"/>
 <script>
 
+    // Parse the query parameters to get the username
+    const urlParams = new URLSearchParams(window.location.search);
+    const carPlateNumber = urlParams.get('carPlateNumber');
 
-    function showUsedCarListing(listings){
+
+    console.log("Plate:", carPlateNumber); // or display it in the page
+
+    if(!carPlateNumber) {
+        window.location.href = "/InfinityNetwork/buyer/dashboard";
+    }
+
+
+
+    console.log("Plate:", carPlateNumber); // Or display it on the page
+
+    if(!carPlateNumber) {
+        window.location.href = "/InfinityNetwork/buyer/dashboard"; // Redirect if no plate number
+    }
+
+    // Function to add the car listing as a favorite
+    async function saveFavorite(carPlateNumber, sellerUsername) {
+        try {
+            const username = sessionStorage.getItem("username");
+            const url = '/InfinityNetwork/buyer/addFavorite'; // API endpoint
+
+            // Prepare the payload
+            const payload = {
+                favoriteFor: carPlateNumber,
+                favoriteBy: username,
+                sellerUsername: sellerUsername,
+            };
+
+            // Send POST request to the backend
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload),
+            });
+
+            // Handle the server response
+            if (response.ok) {
+                const result = await response.text();
+                alert(`Favorite added successfully: ${result}`);
+            } else {
+                const error = await response.text();
+                alert(`Failed to add favorite: ${error}`);
+            }
+        } catch (error) {
+            console.error('Error adding favorite:', error);
+            alert('An error occurred while adding the favorite.');
+        }
+    }
+
+
+
+    function FavoriteUsedCarListing(listings){
         const listingCardsContainer = document.getElementById('listing-cards');
         listingCardsContainer.innerHTML = ''; // Clear any existing content
         // Generate a card for each user
@@ -25,14 +80,18 @@
                     <div class="card-body">
                         <p class="card-text"><span class="user-info">Car Brand</span>: ${listing.carBrand}</p>
                         <p class="card-text"><span class="user-info">Car Model</span>: ${listing.carModel}</p>
+                        <p class="card-text"><span class="user-info">Plate Number</span>: ${listing.carPlateNumber}</p>
                         <p class="card-text"><span class="user-info">Manufactured Year</span>: ${listing.manufacturedYear}</p>
-
+                        <p class="card-text"><span class="user-info">Millage</span>: ${listing.millage}</p>
                         <p class="card-text"><span class="user-info">Price</span>: ${listing.price}</p>
+                        <p class="card-text"><span class="user-info">Listed By</span>: ${listing.listedBy}</p>
+                        <p class="card-text"><span class="user-info">Seller Username</span>: ${listing.sellerUsername}</p>
+                        <p class="card-text"><span class="user-info">Listing Status</span>: ${listing.listingStatus}</p>
 
                     </div>
                     <div class="card-footer container">
                         <div class="row justify-content-between">
-                            <button class="btn btn-primary col-5" onclick="updateListing('${listing.carPlateNumber}')">Edit Listing</button>
+                            <button class="btn btn-primary col-5" onclick="saveFavorite('${listing.carPlateNumber}','${listing.sellerUsername}')">Save</button>
                         </div>
                     </div>
                 </div>
@@ -43,40 +102,32 @@
         });
     }
 
-    async function getBuyerUsedCarListing() {
+
+    async function viewRecord(plate) {
         try {
-            const username = sessionStorage.getItem("username");
-            const url = `/InfinityNetwork/buyer/fetchAllListingForBuyer?username=${username}`
+            const url = `/InfinityNetwork/buyer/recordView?carPlateNumber=${carPlateNumber}`;
             const response = await fetch(url);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-            const listings = await response.json();
-
-            showUsedCarListing(listings);
-
-        } catch (error) {
-            console.error('Error fetching user data:', error);
-        }
-    }
-
-    async function getSearchedBuyerUsedCarListing() {
-        const input = document.getElementById("search-value");
-        const value = input.value;
-        const criteria = document.getElementById("search-by").value;
-        try {
-            const username = sessionStorage.getItem("username");
-            const url = `/InfinityNetwork/buyer/searchListing?criteria=${criteria}&value=${value}&username=${username}`;
-            const response = await fetch(url);
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const listings = await response.json();
-            showUsedCarListing(listings);
         } catch(error) {
         }
     }
 
+    async function getSearchedBuyerUsedCarListing() {
+
+        try {
+            const url = `/InfinityNetwork/buyer/searchListing?criteria=carPlateNumber&value=${carPlateNumber}`;
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const listings = await response.json();
+            console.log(listings);
+            FavoriteUsedCarListing(listings);
+        } catch(error) {
+        }
+    }
     document.addEventListener("DOMContentLoaded", function() {
         const currentUrl = window.location.pathname;
         const navLinks = document.querySelectorAll(".navbar-nav .nav-link");
@@ -87,22 +138,13 @@
             }
         });
 
-        getBuyerUsedCarListing();
+        viewRecord(carPlateNumber);
+        getSearchedBuyerUsedCarListing();
 
-        const searchButton = document.getElementById("search-button");
-        searchButton.addEventListener("click", getSearchedBuyerUsedCarListing);
-
-        const allButton = document.getElementById("search-all-button");
-        allButton.addEventListener("click", async function() {
-            try {
-                getBuyerUsedCarListing();
-                const input = document.getElementById("search-value");
-                input.value = "";
-            } catch(error) {
-                console.log("error");
-            }
-        });
     });
+
+
+
 </script>
 </head>
 <body class="d-flex flex-column min-vh-100">
@@ -113,41 +155,22 @@
         <path d="M4 9a1 1 0 1 1-2 0 1 1 0 0 1 2 0m10 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0M6 8a1 1 0 0 0 0 2h4a1 1 0 1 0 0-2zM4.862 4.276 3.906 6.19a.51.51 0 0 0 .497.731c.91-.073 2.35-.17 3.597-.17s2.688.097 3.597.17a.51.51 0 0 0 .497-.731l-.956-1.913A.5.5 0 0 0 10.691 4H5.309a.5.5 0 0 0-.447.276"/>
         <path d="M2.52 3.515A2.5 2.5 0 0 1 4.82 2h6.362c1 0 1.904.596 2.298 1.515l.792 1.848c.075.175.21.319.38.404.5.25.855.715.965 1.262l.335 1.679q.05.242.049.49v.413c0 .814-.39 1.543-1 1.997V13.5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-1.338c-1.292.048-2.745.088-4 .088s-2.708-.04-4-.088V13.5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-1.892c-.61-.454-1-1.183-1-1.997v-.413a2.5 2.5 0 0 1 .049-.49l.335-1.68c.11-.546.465-1.012.964-1.261a.8.8 0 0 0 .381-.404l.792-1.848ZM4.82 3a1.5 1.5 0 0 0-1.379.91l-.792 1.847a1.8 1.8 0 0 1-.853.904.8.8 0 0 0-.43.564L1.03 8.904a1.5 1.5 0 0 0-.03.294v.413c0 .796.62 1.448 1.408 1.484 1.555.07 3.786.155 5.592.155s4.037-.084 5.592-.155A1.48 1.48 0 0 0 15 9.611v-.413q0-.148-.03-.294l-.335-1.68a.8.8 0 0 0-.43-.563 1.8 1.8 0 0 1-.853-.904l-.792-1.848A1.5 1.5 0 0 0 11.18 3z"/>
     </svg>
-    <h1 class="display-5 fw-bold">Used Car Listings</h1>
+    <h1 class="display-5 fw-bold">Used Car Information</h1>
     <div class="col-lg-6 mx-auto">
-        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
-            <button type="button" class="btn btn-outline-secondary btn-lg px-4 gap-3" id="create-button">Create Listing</button>
-            <button type="button" class="btn btn-outline-secondary btn-lg px-4" id="view-button">View Ratings</button>
-        </div>
+
     </div>
 </div>
 
-<!-- Search bar -->
-<div class="row">
-    <div class="col-md-8">
-        <div class="input-group mb-3">
-            <input id="search-value" type="text" class="form-control" placeholder="Search" aria-label="Search" aria-describedby="button-addon2">
-            <label class="btn btn-outline-secondary" for="search-by">Search By</label>
-            <select class="form-select" id="search-by">
-                <option value="carBrand" selected>Car Brand</option>
-                <option value="carModel">Car Model</option>
 
-                <option value="manufacturedYear">Manufactured Year</option>
-
-            </select>
-            <button class="btn btn-outline-secondary" type="button" id="search-button">Search</button>
-            <button class="btn btn-outline-secondary" type="button" id="search-all-button">All</button>
-        </div>
-    </div>
-</div>
 
 <!-- Dashboard -->
+
 <div class="container-fluid px-5 my-5" style="background-color: white">
 
     <!-- Listings -->
+
     <div id="listing-cards" class="row g-4 overflow-auto" style="max-height: 800px"></div>
 </div>
-
 
 
 <div class="mt-auto footer-color container-fluid" th:insert="~{footer :: footer}"></div>

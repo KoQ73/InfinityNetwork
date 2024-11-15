@@ -1,0 +1,101 @@
+/* Background */
+body {
+    background-color: white;
+}
+
+/* Navigation */
+.navFont {
+    font-family: "Montserrat", sans-serif;
+    font-size: 1.1rem;
+    font-weight: 550;
+}
+
+.nav-link {
+    color: #F6F6F6;
+}
+
+.nav-link:hover,
+.nav-link.active,
+.active {
+    color: #FFDC7F !important;
+}
+
+.navColor {
+    background-color: #163172;
+}
+
+/* Branding */
+.brand-color {
+    font-family: "Open Sans", sans-serif;
+    color: #F6F6F6;
+}
+
+/* Buttons */
+.btn-outline-secondary {
+    background-color: #024CAA;
+    color: white;
+}
+
+.btn-outline-secondary:hover {
+    background-color: #163172;
+}
+
+/* User Info */
+.user-info {
+    font-weight: 500;
+}
+
+/* Footer */
+.footer-color {
+    background-color: #F6F6F6;
+}
+
+/* Cards */
+.card-body {
+    background-color: #FAF7F0;
+}
+
+.card-img {
+    height: 200px;
+}
+
+/* Loan Calculator */
+.calculator-container {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+    width: 100%;
+
+}
+.calculator-container h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+.form-group {
+    margin-bottom: 15px;
+}
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+.form-group input {
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+.result {
+    margin-top: 20px;
+    padding: 10px;
+    background: #f0f8ff;
+    border-radius: 4px;
+    text-align: center;
+}
+.error {
+    color: red;
+    text-align: center;
+}

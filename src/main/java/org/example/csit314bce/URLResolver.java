@@ -3,7 +3,6 @@ package org.example.csit314bce;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
@@ -123,22 +122,40 @@ public class URLResolver {
 
     @GetMapping("InfinityNetwork/buyer/listings")
     public String buyerListings() {
-        return "InfinityNetwork/buyer/listings";
+        return "InfinityNetwork/buyer/BuyerUsedCarListingsUI";
     }
 
 
     @GetMapping("InfinityNetwork/buyer/rate")
     public String buyerRateAgent() {
-        return "InfinityNetwork/buyer/rate";
+        return "InfinityNetwork/buyer/BuyerRateAndReviewUI";
     }
 
     @GetMapping("InfinityNetwork/buyer/edit")
     public String buyerEditAccountInfo() {
-        return "InfinityNetwork/buyer/edit";
+        return "InfinityNetwork/buyer/BuyerChangeDetailsUI";
     }
 
     @GetMapping("InfinityNetwork/buyer/account")
     public String buyerAccount() {
         return "InfinityNetwork/buyer/account";
     }
+
+    @GetMapping("InfinityNetwork/buyer/viewUsedCar")
+    public String viewListing(@RequestParam String carPlateNumber, Model model) {
+        System.out.println(carPlateNumber);
+        // Pass data to the page
+        model.addAttribute("carPlateNumber", carPlateNumber); 
+        return "InfinityNetwork/buyer/BuyerViewUsedCarUI";
+    }
+    @GetMapping("InfinityNetwork/buyer/loanCalculator")
+    public String loanCalculator() {
+        return "InfinityNetwork/buyer/BuyerLoanCalcUI";
+    }
+
+    @GetMapping("InfinityNetwork/buyer/favorite")
+    public String buyerFavorite() {
+        return "InfinityNetwork/buyer/BuyerFavoriteUI";
+    }
+
 }

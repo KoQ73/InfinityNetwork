@@ -1,0 +1,187 @@
+
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html" xmlns:th="http://www.w3.org/1999/xhtml">
+<div th:insert="~{header :: header}"></div>
+<title>Dashboard</title>
+<link rel="stylesheet" href="/css/buyerDashboard.css" />
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+
+    async function displayPage(name) {
+        // Search user data
+        try {
+
+            const url = `/InfinityNetwork/admin/searchUser?criteria=username&value=${name}`;
+            console.log(url);
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const users = await response.json();
+            // Return the matching user
+            return users.find(user => user.username === name);
+        } catch(error) {
+            console.log("error getting data");
+        }
+    }
+
+    function redirectToAccountInfo() {
+        window.location.href = "/InfinityNetwork/buyer/account";
+    }
+
+    function redirectToUpdateInfo() {
+        window.location.href = "/InfinityNetwork/buyer/edit";
+    }
+
+    function displaySuccess() {
+        Swal.fire({
+            title: "Account Updated!",
+            icon: "success",
+            confirmButtonText: 'OK'
+        }).then(() => {
+            // Redirect after user clicks "OK" in Swal
+            redirectToAccountInfo();
+        });
+    }
+
+    function displayError(error) {
+        Swal.fire({
+            title: 'Error!',
+            text: 'Failed to update account.',
+            icon: 'error',
+            confirmButtonText: 'OK'
+        }).then(() => {
+            // Redirect
+            redirectToUpdateInfo();
+        });
+    }
+
+    async function buyerUpdateAccount() {
+        event.preventDefault(); // Prevent form from submitting normally
+        const form = document.getElementById("user-form");
+
+        if (!form.checkValidity()) {
+            form.classList.add('was-validated');
+            return;
+        }
+
+        // Update user
+        try {
+            const original = sessionStorage.getItem("username");
+            const user = await displayPage(original);
+            console.log(user);
+            const url = `/InfinityNetwork/buyer/updateUser?originalUsername=${user.username}`
+            // Create the user
+            const data = {
+                username: document.getElementById('username').value || user.username,
+                password: document.getElementById('password').value || user.password,
+                userType: user.userType,
+                email: document.getElementById('email').value || user.email,
+                phoneNumber: document.getElementById('phone-number').value || user.phoneNumber,
+                enabled: user.enabled
+            };
+            console.log(url);
+            console.log(data);
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+            if (!response.ok) {
+                throw new Error(`Error: ${response.statusText}`);
+            }
+
+            console.log("Account updated successfully");
+            // Update session
+            sessionStorage.setItem("username", document.getElementById("username").value || user.username)
+            displaySuccess();
+        } catch (error) {
+            console.log("error");
+            displayError(error);
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", async function() {
+
+        const original = sessionStorage.getItem("username");
+        console.log(original);
+        const user = await displayPage(original);
+
+        console.log(user);
+
+        document.getElementById("form-username").innerHTML = `Current Username: ${user.username}`;
+        document.getElementById("form-email").innerHTML = `Current Email: ${user.email}`;
+        document.getElementById("form-phone").innerHTML = `Current Phone: ${user.phoneNumber}`;
+
+        // Handle form submission
+        const form = document.getElementById("user-form");
+        form.addEventListener("submit", buyerUpdateAccount);
+    });
+</script>
+</head>
+<body class="d-flex flex-column min-vh-100">
+<div th:insert="~{buyerNavbar :: buyer-navbar}"></div>
+
+<div class="px-4 pt-2 mt-2 text-center">
+    <h1 class="display-5">Edit Account</h1>
+</div>
+
+<div class="px-4 py-5 text-center">
+    <h6 class="h6 fw-bold">Type new info or leave blank for current info.</h6>
+</div>
+
+<!-- Display form -->
+<div class="container-fluid mb-5">
+    <form class="row g-1 needs-validation" id="user-form" novalidate>
+        <div class="row justify-content-md-center">
+            <div class="mb-3 col-md-6">
+                <label for="username" class="form-label" id="form-username">Username</label>
+                <input type="text" class="form-control" id="username">
+                <div class="invalid-feedback">
+                    Username is taken.
+                </div>
+            </div>
+        </div>
+        <div class="row justify-content-md-center">
+            <div class="mb-3 col-md-6">
+                <label for="email" class="form-label" id="form-email">Email</label>
+                <input type="text" class="form-control" id="email">
+                <div class="invalid-feedback">
+                    Please provide a valid email.
+                </div>
+            </div>
+        </div>
+        <div class="row justify-content-md-center">
+            <div class="mb-3 col-md-6">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="password">
+                <div class="invalid-feedback">
+                    Please provide a password.
+                </div>
+            </div>
+        </div>
+        <div class="row justify-content-md-center">
+            <div class="mb-3 col-md-6">
+                <label for="phone-number" class="form-label" id="form-phone">Phone</label>
+                <div class="input-group">
+                    <span class="input-group-text">+65</span>
+                    <input type="text" class="form-control" id="phone-number">
+                    <div class="invalid-feedback">
+                        Please provide a valid phone.
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row justify-content-md-center">
+            <div class="col-md-6 text-center">
+                <button class="btn btn-outline-secondary" type="submit">Submit form</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="mt-auto footer-color container-fluid" th:insert="~{footer :: footer}"></div>
+</body>
+</html>
