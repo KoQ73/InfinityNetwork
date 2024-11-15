@@ -50,14 +50,17 @@
             // Handle the server response
             if (response.ok) {
                 const result = await response.text();
-                alert(`Favorite added successfully: ${result}`);
+                if (result !== "success") {
+                    throw new Error(result)
+                }
+                displaySuccess();
             } else {
                 const error = await response.text();
-                alert(`Failed to add favorite: ${error}`);
+                displayError();
             }
         } catch (error) {
             console.error('Error adding favorite:', error);
-            alert('An error occurred while adding the favorite.');
+            displayError();
         }
     }
 
@@ -71,6 +74,27 @@
             }
         } catch(error) {
         }
+    }
+
+    function displayError() {
+         Swal.fire({
+                title: 'Error!',
+                text: 'Failed to save listing.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+    }
+
+
+    function displaySuccess() {
+        Swal.fire({
+          title: "Listing Saved!",
+          icon: "success",
+          confirmButtonText: 'OK'
+        }).then(() => {
+            // Redirect after user clicks "OK" in Swal
+            window.location.href = "/InfinityNetwork/buyer/favorite";
+        });
     }
 
     async function getSearchedBuyerUsedCarListing() {

@@ -80,6 +80,23 @@
         });
     }
 
+    function displaySuccess() {
+        Swal.fire({
+          title: "Listing Removed!",
+          icon: "success",
+          confirmButtonText: 'OK'
+        })
+    }
+
+    function displayError() {
+        Swal.fire({
+                title: 'Error!',
+                text: 'Failed to remove listing.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+    }
+
     async function removeFavorite(carPlateNumber) {
         const username = sessionStorage.getItem("username");
 
@@ -100,16 +117,15 @@
             if (!response.ok) {
                 throw new Error("Failed to remove the favorite listing.");
             }
-
-            const result = await response.text();  // The backend returns a message string
-            console.log(result);  // You can log the result or show it to the user
-
-            // If the favorite is successfully removed, refresh the listing
-            alert("Favorite removed successfully!");
+            const result = await response.text();
+            if (result !== "success") {
+                throw new Error(result);
+            }
+            displaySuccess();
             getBuyerUsedCarListing(username);  // Re-fetch the listings after removal
         } catch (error) {
             console.error("Error while removing favorite:", error);
-            alert("Failed to remove the favorite. Please try again later.");
+            displayError();
         }
     }
 
