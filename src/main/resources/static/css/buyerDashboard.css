@@ -62,4 +62,11 @@ body {
     height: 200px;
 }
 
+.grid-col {
+      border: 1px solid #ddd;
+      padding: 10px;
+      background-color: #f8f9fa;
+      text-align: center;
+    }
+
 

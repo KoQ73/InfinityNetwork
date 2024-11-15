@@ -62,47 +62,6 @@
     }
 
 
-
-    function FavoriteUsedCarListing(listings){
-        const listingCardsContainer = document.getElementById('listing-cards');
-        listingCardsContainer.innerHTML = ''; // Clear any existing content
-        // Generate a card for each user
-        listings.forEach(listing => {
-            const card = document.createElement('div');
-            card.classList.add('col-md-4'); // Bootstrap column class for responsive layout
-
-            console.log("photo");
-            console.log(listing.photo);
-            // Create card HTML structure
-            card.innerHTML = `
-                <div class="card h-100">
-                        <img src="${listing.photo ? listing.photo : ''}" alt="No Image" class="card-img-top card-img fit-picture">
-                    <div class="card-body">
-                        <p class="card-text"><span class="user-info">Car Brand</span>: ${listing.carBrand}</p>
-                        <p class="card-text"><span class="user-info">Car Model</span>: ${listing.carModel}</p>
-                        <p class="card-text"><span class="user-info">Plate Number</span>: ${listing.carPlateNumber}</p>
-                        <p class="card-text"><span class="user-info">Manufactured Year</span>: ${listing.manufacturedYear}</p>
-                        <p class="card-text"><span class="user-info">Millage</span>: ${listing.millage}</p>
-                        <p class="card-text"><span class="user-info">Price</span>: ${listing.price}</p>
-                        <p class="card-text"><span class="user-info">Listed By</span>: ${listing.listedBy}</p>
-                        <p class="card-text"><span class="user-info">Seller Username</span>: ${listing.sellerUsername}</p>
-                        <p class="card-text"><span class="user-info">Listing Status</span>: ${listing.listingStatus}</p>
-
-                    </div>
-                    <div class="card-footer container">
-                        <div class="row justify-content-between">
-                            <button class="btn btn-primary col-5" onclick="saveFavorite('${listing.carPlateNumber}','${listing.sellerUsername}')">Save</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            // Append the card to the container
-            listingCardsContainer.appendChild(card);
-        });
-    }
-
-
     async function viewRecord(plate) {
         try {
             const url = `/InfinityNetwork/buyer/recordView?carPlateNumber=${carPlateNumber}`;
@@ -124,11 +83,11 @@
             }
             const listings = await response.json();
             console.log(listings);
-            FavoriteUsedCarListing(listings);
+            return listings.find(listing => listing.carPlateNumber === carPlateNumber);
         } catch(error) {
         }
     }
-    document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener("DOMContentLoaded", async function() {
         const currentUrl = window.location.pathname;
         const navLinks = document.querySelectorAll(".navbar-nav .nav-link");
 
@@ -139,8 +98,31 @@
         });
 
         viewRecord(carPlateNumber);
-        getSearchedBuyerUsedCarListing();
+        const listing = await getSearchedBuyerUsedCarListing();
 
+        document.getElementById("car-brand").innerHTML = `Current Car Brand: ${listing.carBrand}`;
+        document.getElementById("car-model").innerHTML = `Current Car Model: ${listing.carModel}`;
+        document.getElementById("plate").innerHTML = `Current Car Plate Number: ${listing.carPlateNumber}`;
+        document.getElementById("status").innerHTML = `Current Listing Status: ${listing.listingStatus}`;
+        document.getElementById("year").innerHTML = `Current Manufactured Year: ${listing.manufacturedYear}`;
+        document.getElementById("millage").innerHTML = `Current Millage: ${listing.millage}`;
+        document.getElementById("price").innerHTML = `Current Price: ${listing.price}`;
+        document.getElementById("seller").innerHTML = `Current Seller ID: ${listing.sellerUsername}`;
+        document.getElementById("created-at").innerHTML = `Current Seller ID: ${listing.created_at}`;
+        document.getElementById("updated-at").innerHTML = `Current Seller ID: ${listing.updated_at}`;
+        document.getElementById("listed-by").innerHTML = `Current Seller ID: ${listing.listedBy}`;
+
+            // Check if photo exists and display it
+        if (listing.photo) {
+            const carPhoto = document.getElementById("car-photo");
+            carPhoto.src = listing.photo; // Set the photo URL
+            carPhoto.style.display = "block"; // Make the image visible
+        }
+
+        const save = document.getElementById("save-button");
+        save.addEventListener("click", async function() {
+            saveFavorite(listing.carPlateNumber, listing.sellerUsername);
+        });
     });
 
 
@@ -164,12 +146,60 @@
 
 
 <!-- Dashboard -->
-
-<div class="container-fluid px-5 my-5" style="background-color: white">
-
-    <!-- Listings -->
-
-    <div id="listing-cards" class="row g-4 overflow-auto" style="max-height: 800px"></div>
+<div class="container-fluid">
+    <div class="row mb-3 text-center justify-content-md-center">
+        <div class="col-4 grid-col">Car Photo</div>
+        <div class="col-4 grid-col">
+            <img id="car-photo" src="" alt="Car Photo" style="max-width: 100%; height: auto; display: none;">
+        </div>
+    </div>
+    <div class="row mb-3 text-center justify-content-md-center">
+        <div class="col-4 grid-col">Car Brand</div>
+        <div class="col-4 grid-col" id="car-brand"></div>
+    </div>
+    <div class="row mb-3 text-center justify-content-md-center">
+        <div class="col-4 grid-col">Car Model</div>
+        <div class="col-4 grid-col" id="car-model"></div>
+    </div>
+    <div class="row mb-3 text-center justify-content-md-center">
+        <div class="col-4 grid-col">Plate Number</div>
+        <div class="col-4 grid-col" id="plate"></div>
+    </div>
+    <div class="row mb-3 text-center justify-content-md-center">
+        <div class="col-4 grid-col">Created At</div>
+        <div class="col-4 grid-col" id="created-at"></div>
+    </div>
+    <div class="row mb-3 text-center justify-content-md-center">
+        <div class="col-4 grid-col">Manufactured Year</div>
+        <div class="col-4 grid-col" id="year"></div>
+    </div>
+    <div class="row mb-3 text-center justify-content-md-center">
+        <div class="col-4 grid-col">Millage</div>
+        <div class="col-4 grid-col" id="millage"></div>
+    </div>
+    <div class="row mb-3 text-center justify-content-md-center">
+        <div class="col-4 grid-col">Price</div>
+        <div class="col-4 grid-col" id="price"></div>
+    </div>
+    <div class="row mb-3 text-center justify-content-md-center">
+        <div class="col-4 grid-col">Updated at</div>
+        <div class="col-4 grid-col" id="updated-at"></div>
+    </div>
+    <div class="row mb-3 text-center justify-content-md-center">
+        <div class="col-4 grid-col">Listed By</div>
+        <div class="col-4 grid-col" id="listed-by"></div>
+    </div>
+    <div class="row mb-3 text-center justify-content-md-center">
+        <div class="col-4 grid-col">Seller Username</div>
+        <div class="col-4 grid-col" id="seller"></div>
+    </div>
+    <div class="row mb-3 text-center justify-content-md-center">
+        <div class="col-4 grid-col">Listing Status</div>
+        <div class="col-4 grid-col" id="status"></div>
+    </div>
+    <div class="row mb-3 text-center justify-content-md-center">
+        <button type="button" class="col-4 btn btn-primary" id="save-button">Save Listing</button>
+    </div>
 </div>
 
 
