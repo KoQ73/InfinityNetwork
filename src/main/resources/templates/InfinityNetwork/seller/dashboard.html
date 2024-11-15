@@ -10,6 +10,10 @@
         window.location.href = "/InfinityNetwork/seller/rate";
     }
 
+    function redirectToTrack() {
+        window.location.href = "/InfinityNetwork/seller/interests";
+    }
+
     document.addEventListener("DOMContentLoaded", function() {
         const currentUrl = window.location.pathname;
         const navLinks = document.querySelectorAll(".navbar-nav .nav-link");
@@ -33,6 +37,7 @@
         <h1 class="display-5 fw-bold">Dashboard</h1>
         <div class="col-lg-6 mx-auto my-5">
             <div class="d-grid gap-2 d-sm-flex justify-content-sm-between">
+                <button type="button" class="btn btn-outline-secondary btn-lg px-4 gap-3 col-5" id="track-button" onclick="redirectToTrack()">Track Interests</button>
                 <button type="button" class="btn btn-outline-secondary btn-lg px-4 gap-3 col-5" id="create-button" onclick="redirectToCreate()">Rate Agent</button>
             </div>
         </div>

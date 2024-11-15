@@ -40,6 +40,40 @@
         });
     }
 
+    function createFavoriteCards(listings) {
+     const listingCardsContainer = document.getElementById('listing-cards');
+        listingCardsContainer.innerHTML = ''; // Clear any existing content
+        // Generate a card for each user
+        listings.forEach(listing => {
+            const card = document.createElement('div');
+            card.classList.add('col-md-4'); // Bootstrap column class for responsive layout
+
+            console.log("photo");
+            console.log(listing.photo);
+            // Create card HTML structure
+            card.innerHTML = `
+                <div class="card h-100">
+                        <img src="${listing.photo ? listing.photo : ''}" alt="No Image" class="card-img-top card-img fit-picture">
+                    <div class="card-body">
+                        <p class="card-text"><span class="user-info">Car Brand</span>: ${listing.carBrand}</p>
+                        <p class="card-text"><span class="user-info">Car Model</span>: ${listing.carModel}</p>
+                        <p class="card-text"><span class="user-info">Manufactured Year</span>: ${listing.manufacturedYear}</p>
+                        <p class="card-text"><span class="user-info">Car Plate Number</span>: ${listing.carPlateNumber}</p>
+                        <p class="card-text"><span class="user-info">Price</span>: ${listing.price}</p>
+                        <p class="card-text"><span class="user-info">Listed By: </span>: ${listing.listedBy}</p>
+                        <h5>Favorite Count: ${listing.favoriteCount}</h5>
+                    </div>
+                    <div class="card-footer container">
+
+                    </div>
+                </div>
+            `;
+
+            // Append the card to the container
+            listingCardsContainer.appendChild(card);
+        });
+    }
+
     async function showAllViews() {
         const username = sessionStorage.getItem("username");
         const url = `/InfinityNetwork/seller/fetchViewCountForSellerListings?username=${username}`;
@@ -55,6 +89,21 @@
         }
     }
 
+    async function showAllFavorites() {
+        const username = sessionStorage.getItem("username");
+        const url = `/InfinityNetwork/seller/fetchFavoriteCountForSellerListings?username=${username}`;
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const results = await response.json();
+            createFavoriteCards(results);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
     document.addEventListener("DOMContentLoaded", function() {
         const currentUrl = window.location.pathname;
         const navLinks = document.querySelectorAll(".navbar-nav .nav-link");
@@ -65,6 +114,8 @@
             }
         });
 
+        const btn = document.getElementById("track-views");
+        btn.classList.add("btn-click");
         showAllViews();
     });
 </script>
@@ -79,7 +130,7 @@
     <div class="col-lg-6 mx-auto my-5">
         <div class="d-grid gap-2 d-sm-flex justify-content-sm-between">
             <button type="button" class="btn btn-outline-secondary btn-lg px-4 gap-3 col-5" id="track-views" onclick="showAllViews()">Track Views</button>
-            <button type="button" class="btn btn-outline-secondary btn-lg px-4 gap-3 col-5" id="track-shortlists" onclick="showAllFavorites()">Track Views</button>
+            <button type="button" class="btn btn-outline-secondary btn-lg px-4 gap-3 col-5" id="track-shortlists" onclick="showAllFavorites()">Track Favorites</button>
         </div>
     </div>
 </div>
